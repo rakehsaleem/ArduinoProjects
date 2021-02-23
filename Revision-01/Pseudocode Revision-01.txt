@@ -1,0 +1,81 @@
+// This program is going to make the microcontroller go into the sleep mode in order to save power consumption of the
+   Trigger board. It will wake the system up for sometime i.e, 60 secs, to check the strain and then goes back to sleep. The 
+   attiny micro-controller operate MAX5479 as slave device that send and receive data through I2C 2-wire serial interface //
+
+Using define directive to allow certain definitions of certain macros within the source code.
+Define the I2C slave address "0x28" for digital Potentiometer
+Define the command byte for WA to be "0x11" and WB to be "0x12" for the digital Potentiometer
+Define the Pin PB3 of the attiny85 uC to be Strain Power for Ultra-low leakage loade switch
+Define the Pin PB4 as an LED to show the output status
+Define the wakeup time to be 60 sec
+
+Use Header files to include the required libraries for the project.
+Include <avr/io.h> for the appropriate IO definitions for the device that has been specified by the uC
+Include <avr/sleep.h> to allow the device to reduce its power consumption and put into different sleep modes
+Include <TinyWireM.h> to allow attiny uC to have I2C serial communication as Master
+
+Assign an unsigned long of contant type which has starting value of zero for the timer ;
+
+Beginning of setup function()
+{
+   Initialize the I2C Master library ;
+   Call the function I2C which is executed first before compiler goes to the next instruction ;
+   Run the loop function 5 times
+   {
+      Set the pinmode of byte "i" as an input ;
+    }
+    In the General Interrupt Mask Register, set the Pin Change Interrupt Enable High. Any change on PCIE pin will cause an interrupt ;
+    In the Pin Change Mask Register, set PB0 as the interrupt pin ;
+    Set the LED pin defined above as an Output pin ;
+    Make the Pin HIGH and wait for the delay of 10 ms ;
+    Drive the Pin LOW, so it doesn't source the current ;
+    Set the Strain Power Pin defined above as Output pin ;
+    Make Srain power HIGH all the time ;
+}
+
+Beginning of loop function()
+{
+   Call the function GoToSleep which is executed again and again to keep the uC in sleep mode ;
+   Initialize a do while loop
+   {
+      Keep the Status of LED pin HIGH and wait for 60 sec ;
+    }
+    When Preset time is achieved ;
+    Drive the LED pin LOW, so it doesn't source current ;
+}
+
+Beginning of GoToSleep function()
+{
+   In the General Interrupt Mask Register, set the Pin Change Interrupt Enable High. Any change on PCIE pin will cause an interrupt ;
+   In the Pin Change Mask Register, set PB0 as the interrupt pin ;
+   Keep the ADC off by toggling the ADC enable bit in ADC control and status register A ;
+   Set the sleep mode defined in the sleep directive to be Sleep Mode Power Down to reduce power consumption ;
+   Set the Sleep enable bit in the Microcontroller Control Register to enter the sleep mode when SLEEP instruction is executed ;
+   Set the Sleep enable interrupt bit to execute any interrupt in SLEEP mode ;
+   Set the processor to sleep ;
+   Clear the Sleep enable bit in Microcontroller control register ;
+   Set the AD Enable bit in ADC control and status register A to turn ON the ADC ;
+   System goes to sleep ;
+}
+
+Beginning of Interrupt Service Routine function()
+{
+   Interrupt service routine to execute specific task during interrupt ; // have high priority
+}
+
+Beginning of I2C function()
+{
+   // WA of MAX5479
+   Initialization of I2C Master library ;
+   Setup the I2C slave address i.e, 7 bit long which is defined above ;
+   Setup the Command byte address to which data is going to be send ;
+   Buffer up the desired value i.e, max 256 tap, for the digital potentiometer ;
+   Send the buffered data stored in byte ;
+
+   // WB of MAX5479
+   Initialization of I2C Master library ;
+   Setup the I2C slave address i.e, 7 bit long which is defined above ;
+   Setup the Command byte address to which data is going to be send ;
+   Buffer up the desired value i.e, max 256 tap, for the digital potentiometer ;
+   Send the buffered data stored in byte ;
+}
